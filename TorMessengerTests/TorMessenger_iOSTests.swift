@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import TorMessenger_iOS
+@testable import TorMessengeriOS
 
 class TorMessenger_iOSTests: XCTestCase {
 

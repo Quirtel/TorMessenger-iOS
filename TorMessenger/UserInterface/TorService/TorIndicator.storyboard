@@ -10,7 +10,7 @@
         <!--Tor Indicator View Controller-->
         <scene sceneID="IN9-kU-LLp">
             <objects>
-                <viewController id="Fgm-Zi-tsz" customClass="TorIndicatorViewController" customModule="TorMessenger" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="TorIndicatorViewController" id="Fgm-Zi-tsz" customClass="TorIndicatorViewController" customModule="TorMessenger" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ONL-ZB-zO7">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

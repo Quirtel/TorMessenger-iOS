@@ -14,19 +14,23 @@ import UIKit
 internal enum StoryboardScene {
   internal enum Chats: StoryboardType {
     internal static let storyboardName = "Chats"
+
+    internal static let chatsViewController = SceneType<TorMessenger.ChatsViewController>(storyboard: Chats.self, identifier: "ChatsViewController")
+  }
+  internal enum Contacts: StoryboardType {
+    internal static let storyboardName = "Contacts"
+
+    internal static let contactsViewController = SceneType<TorMessenger.ContactsViewController>(storyboard: Contacts.self, identifier: "ContactsViewController")
   }
   internal enum LaunchScreen: StoryboardType {
     internal static let storyboardName = "LaunchScreen"
 
     internal static let initialScene = InitialSceneType<UIKit.UIViewController>(storyboard: LaunchScreen.self)
   }
-  internal enum Main: StoryboardType {
-    internal static let storyboardName = "Main"
-
-    internal static let initialScene = InitialSceneType<UIKit.UITabBarController>(storyboard: Main.self)
-  }
   internal enum TorIndicator: StoryboardType {
     internal static let storyboardName = "TorIndicator"
+
+    internal static let torIndicatorViewController = SceneType<TorMessenger.TorIndicatorViewController>(storyboard: TorIndicator.self, identifier: "TorIndicatorViewController")
   }
 }
 // swiftlint:enable explicit_type_interface identifier_name line_length type_body_length type_name
