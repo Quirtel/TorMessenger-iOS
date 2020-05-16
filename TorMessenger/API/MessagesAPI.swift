@@ -1,11 +1,12 @@
 import Moya
+import SwiftyUserDefaults
 
-public enum Messages {
+public enum MessagesAPI {
     case send
     case retrieve
 }
 
-extension Messages: TargetType {
+extension MessagesAPI: TargetType {
     public var baseURL: URL {
         URL(string: "http://localhost:8080/v1/messages")!
     }
@@ -37,8 +38,12 @@ extension Messages: TargetType {
     }
     
     public var headers: [String : String]? {
-        return ["Content-Type": "application/json"]
+        return ["Content-Type": "application/json",
+                "Authorization" : "Bearer \(Defaults[\.authToken])"
+        ]
     }
     
-    
+    public var validationType: ValidationType {
+        return .successCodes
+    }
 }

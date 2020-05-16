@@ -1,13 +1,16 @@
 import UIKit
+import Reusable
 
-class ChatCell: UITableViewCell {
+class ChatCell: UITableViewCell, NibReusable {
     @IBOutlet weak var senderName: UILabel!
     @IBOutlet weak var previewText: UILabel!
     @IBOutlet weak var sentTime: UILabel!
     
     func configure(with model: ChatCellModel) {
-        self.senderName.text = model.name
-        self.previewText.text = model.lastMessageText
-        self.previewText.text = model.sentTime
+        senderName.text = model.name
+        previewText.text = model.lastMessageText
+        let date = Date(timeIntervalSince1970: Double(model.sentTime)!)
+        let formatter = RelativeDateTimeFormatter()
+        sentTime.text = formatter.localizedString(for: date, relativeTo: Date.init())
     }
 }

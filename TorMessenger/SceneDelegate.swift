@@ -1,13 +1,17 @@
 import UIKit
+import RealmSwift
+import SwiftyUserDefaults
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     var window: UIWindow?
 
-
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let _ = (scene as? UIWindowScene) else { return }
-        
+//        
+        Defaults[\.username] = "user2"
+        Defaults[\.passwordHash] = "355543"
+//        Defaults[\.tokenExpirationDate] = "0"
         
         let chatsVC = StoryboardScene.Chats.chatsViewController.instantiate()
         chatsVC.title = "Chats"
@@ -23,23 +27,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             torServiceNC.navigationBar.prefersLargeTitles = true
         }
         
-        let contactsVC = StoryboardScene.Contacts.contactsViewController.instantiate()
-        contactsVC.title = "Contacts"
-        let contactsNC = UINavigationController(rootViewController: contactsVC)
-        if #available(iOS 11.0, *) {
-            contactsNC.navigationBar.prefersLargeTitles = true
-        }
+//        let contactsVC = StoryboardScene.Contacts.contactsViewController.instantiate()
+//        contactsVC.title = "Contacts"
+//        let contactsNC = UINavigationController(rootViewController: contactsVC)
+//        if #available(iOS 11.0, *) {
+//            contactsNC.navigationBar.prefersLargeTitles = true
+//        }
         
         let tabBarController = UITabBarController()
-        tabBarController.setViewControllers([contactsNC, chatsNC, torServiceNC], animated: false)
+        tabBarController.setViewControllers([chatsNC, torServiceNC], animated: false)
         
-        let contactsTab = tabBarController.tabBar.items?[0]
-        contactsTab?.image = UIImage(systemName: "person.fill")
+//        let contactsTab = tabBarController.tabBar.items?[0]
+//        contactsTab?.image = UIImage(systemName: "person.fill")
         
-        let chatsTab = tabBarController.tabBar.items?[1]
+        let chatsTab = tabBarController.tabBar.items?[0]
         chatsTab?.image = UIImage(systemName: "bubble.right.fill")
         
-        let torIndicatorTab = tabBarController.tabBar.items?[2]
+        let torIndicatorTab = tabBarController.tabBar.items?[1]
         torIndicatorTab?.image = UIImage(systemName: "link")
         
         window?.rootViewController = tabBarController

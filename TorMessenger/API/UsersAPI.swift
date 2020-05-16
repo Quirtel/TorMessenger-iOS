@@ -26,11 +26,11 @@ extension UsersAPI: TargetType {
     public var method: Moya.Method {
         switch self {
         case .getUserInformation:
-            return .post
+            return .get
         case .register:
             return .post
         case .auth:
-            return .get
+            return .post
         }
     }
     
@@ -42,16 +42,20 @@ extension UsersAPI: TargetType {
         switch self {
         case .auth(let credentials):
             return .requestParameters(parameters: credentials.toJSON(),
-                                      encoding: URLEncoding.queryString)
+                                      encoding: JSONEncoding.default)
         case .getUserInformation:
             return .requestPlain
         case .register(userParameter: let userParameter):
             return .requestParameters(parameters: userParameter.toJSON(),
-                                      encoding: URLEncoding.queryString)
+                                      encoding: JSONEncoding.default)
         }
     }
     
     public var headers: [String : String]? {
         return ["Content-Type": "application/json"]
+    }
+    
+    public var validationType: ValidationType {
+        return .successCodes
     }
 }

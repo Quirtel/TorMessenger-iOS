@@ -11,13 +11,16 @@ target 'TorMessenger' do
 
   pod 'Moya', '~> 14.0'
   pod 'SwiftyUserDefaults', '~> 5.0'
-  pod 'Chatto', '= 3.6.0'
-  pod 'ChattoAdditions', '= 3.6.0'
+  #pod 'Chatto', '= 3.6.0'
+  #pod 'ChattoAdditions', '= 3.6.0'
   pod 'SwiftGen'
   pod 'Reusable'
   pod 'ObjectMapper'
   pod 'ReachabilitySwift'
   pod 'MessageKit'
+  pod 'Moya-ObjectMapper'
+  pod 'Moya/RxSwift'
+  pod 'Moya-ObjectMapper/RxSwift'
 
   target 'TorMessengerTests' do
     inherit! :search_paths

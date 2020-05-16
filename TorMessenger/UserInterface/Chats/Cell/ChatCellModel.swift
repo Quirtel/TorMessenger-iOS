@@ -11,7 +11,7 @@ struct ChatCellModel {
         self.sentTime = sentTime
     }
     
-    init(name: String, lastMessageText: String, sentTime: UInt64) {
+    init(name: String, lastMessageText: String, sentTime: Int64) {
         self.name = name
         self.lastMessageText = lastMessageText
         self.sentTime = String(sentTime)
