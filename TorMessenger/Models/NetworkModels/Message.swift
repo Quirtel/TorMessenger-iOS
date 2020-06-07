@@ -7,7 +7,7 @@ struct Message: Mappable {
     var text = String()
     var sentTime: Int64 = 0
     
-    init(fromUserId: String, toUserId: String, messageId: String,
+    init(fromUserId: String, toUserId: String, messageId: String?,
          text: String, sentTime: Int64) {
         self.fromUserId = fromUserId
         self.toUserId = toUserId

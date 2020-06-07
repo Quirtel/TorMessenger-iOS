@@ -2,7 +2,7 @@ import Moya
 import SwiftyUserDefaults
 
 public enum MessagesAPI {
-    case send
+    case send(toUserId: String, text: String)
     case retrieve
 }
 
@@ -34,7 +34,12 @@ extension MessagesAPI: TargetType {
     }
     
     public var task: Task {
-        return .requestPlain
+        switch self {
+        case .send(let toUserId, let text):
+            return .requestParameters(parameters: ["toUserId" : toUserId, "text" : text], encoding: JSONEncoding.default)
+        case .retrieve:
+            return .requestPlain
+        }
     }
     
     public var headers: [String : String]? {

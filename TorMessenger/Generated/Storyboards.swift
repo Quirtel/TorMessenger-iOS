@@ -12,6 +12,11 @@ import UIKit
 
 // swiftlint:disable explicit_type_interface identifier_name line_length type_body_length type_name
 internal enum StoryboardScene {
+  internal enum Auth: StoryboardType {
+    internal static let storyboardName = "Auth"
+
+    internal static let authViewController = SceneType<TorMessenger.AuthViewController>(storyboard: Auth.self, identifier: "AuthViewController")
+  }
   internal enum Chats: StoryboardType {
     internal static let storyboardName = "Chats"
 

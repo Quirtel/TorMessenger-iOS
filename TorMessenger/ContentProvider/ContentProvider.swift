@@ -10,6 +10,18 @@ final class ContentProvider {
     private var disposeBag = DisposeBag()
     private var realmQueue = DispatchQueue(label: "RealmQueue")
     
+    
+    func refreshToken(error: Error) {
+        let moyaError: MoyaError? = error as? MoyaError
+        let response : Response? = moyaError?.response
+        let statusCode : Int? = response?.statusCode
+        if let errorCode = statusCode {
+            if errorCode == 401 {
+                Defaults[\.tokenExpirationDate] = "0"
+            }
+        }
+    }
+    
     func fetchUser(shortAddress: String,
                     completion: @escaping (User?) -> ()) throws {
         requestWithTokenCheck() {
@@ -22,6 +34,7 @@ final class ContentProvider {
                         completion(user)
                     }
                 case .error(let error):
+                    self.refreshToken(error: error)
                     print(error)
                     break
                 }
@@ -38,18 +51,31 @@ final class ContentProvider {
                     completion(user)
                 }
             case .error(let error):
+                self.refreshToken(error: error)
                 print(error)
                 break
             }
         }.disposed(by: disposeBag)
     }
     
-    func authenticate(auth: Auth, completion: (() -> ())?) {
-        
+    func authenticate(auth: Auth, completionHandler: (() -> ())?, errorHandler: ((_ errorCode: Int?) -> ())?) {
+        usersProvider.rx.request(.auth(credentials: auth), callbackQueue: DispatchQueue.global()).subscribe { event in
+            switch event {
+            case .success(let context):
+                let credentials = BearerToken(JSONString: try! context.mapString())!
+                Defaults[\.authToken] = credentials.token
+                Defaults[\.tokenExpirationDate] = String(credentials.expirationDate)
+                completionHandler?()
+            case .error(let error):
+                print("requesting token error: \n" + error.localizedDescription)
+                errorHandler?(error.statusCode)
+                break
+            }
+        }.disposed(by: disposeBag)
     }
     
     func getMessages(completion: @escaping ([MessageRealmObject]) -> ()) {
-        requestWithTokenCheck() {
+        requestWithTokenCheck {
             self.messagesProvider.rx.request(.retrieve).subscribe { event in
                 var messageDatabaseObjects: [MessageRealmObject] = []
                 let realm = try! Realm()
@@ -65,37 +91,45 @@ final class ContentProvider {
                         realm.add(messageDatabaseObjects)
                     }
                 case .error(let error):
+                    self.refreshToken(error: error)
                     print(error)
-                    break
                 }
                 
                 messageDatabaseObjects.removeAll()
                 messageDatabaseObjects = realm.objects(MessageRealmObject.self)
                     .sorted(byKeyPath: "sentTime", ascending: false)
-                    .distinct(by: ["fromUserId"]).map {$0}
-                
-                DispatchQueue.main.async {
-                    completion(messageDatabaseObjects)
+                    .distinct(by: ["fromUserId"]).compactMap {
+                        if $0.fromUserId == Defaults[\.username]! {
+                            return nil
+                        } else {
+                            return $0
+                        }
                 }
+                
+                completion(messageDatabaseObjects)
+            
             }.disposed(by: self.disposeBag)
         }
     }
     
-    func sendMessage(messageObject: Message, completion: @escaping () -> ()) {
-        requestWithTokenCheck() {
-            self.messagesProvider.rx.request(.send,
-                                          callbackQueue: DispatchQueue.global()).subscribe { event in
+    func sendMessage(toUserId: String, text: String, completion: @escaping () -> ()) {
+        requestWithTokenCheck {
+            self.messagesProvider.rx.request(.send(toUserId: toUserId, text: text)).subscribe { event in
                 switch event {
                 case .success(_):
+                    let messageObject = Message(fromUserId: Defaults[\.username] ?? "null",
+                                                toUserId: toUserId,
+                                                messageId: nil, text: text,
+                                                sentTime: Int64(Date.init().timeIntervalSince1970))
+                    let realm = try! Realm()
+                    try! realm.write {
+                        realm.add(MessageRealmObject(with: messageObject))
+                    }
                     DispatchQueue.main.async {
-                        let realm = try! Realm()
-                        try! realm.write {
-                            realm.add(MessageRealmObject(with: messageObject))
-                        }
                         completion()
                     }
                 case .error(let error):
-                    print(error)
+                    self.refreshToken(error: error)
                     break
                 }
             }.disposed(by: self.disposeBag)
@@ -113,18 +147,9 @@ final class ContentProvider {
         let auth = Auth(login: Defaults[\.username]!, passwordHash: Defaults[\.passwordHash]!)
         
         if tokenExpirationDate + 3600 <= timeNow  {
-            usersProvider.rx.request(.auth(credentials: auth), callbackQueue: DispatchQueue.global()).subscribe { event in
-                switch event {
-                case .success(let context):
-                    let credentials = BearerToken(JSONString: try! context.mapString())!
-                    Defaults[\.authToken] = credentials.token
-                    Defaults[\.tokenExpirationDate] = String(credentials.expirationDate)
-                    completionHandler?()
-                case .error(let error):
-                    print(error)
-                    break
-                }
-            }.disposed(by: disposeBag)
+            authenticate(auth: auth, completionHandler: {
+                completionHandler?()
+            }, errorHandler: nil)
         } else {
             completionHandler?()
         }
