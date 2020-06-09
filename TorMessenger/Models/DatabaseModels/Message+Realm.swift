@@ -1,7 +1,7 @@
 import RealmSwift
 import MessageKit
 
-final class MessageRealmObject: Object {
+final class MessageRealmObject: Object, Comparable {
    @objc dynamic var fromUserId = String()
    @objc dynamic var toUserId = String()
    @objc dynamic var messageIdentifier: String?
@@ -15,6 +15,10 @@ final class MessageRealmObject: Object {
         self.messageIdentifier = model.messageId
         self.text = model.text
         self.sentTime = model.sentTime
+    }
+    
+    static func < (lhs: MessageRealmObject, rhs: MessageRealmObject) -> Bool {
+        return lhs.sentTime < rhs.sentTime
     }
 }
 

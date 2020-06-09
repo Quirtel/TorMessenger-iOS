@@ -1,19 +1,20 @@
 import Foundation
 import ObjectMapper
 
-struct User: Mappable, Codable {
+struct UserRegistration: Mappable, Codable {
     var firstName: String = ""
     var lastName: String?
     var bio: String?
     var shortAddress: String = ""
-    var lastSeen: String? = ""
+    var passwordHash: String = ""
     
-    init(firstName: String, lastName: String, bio: String?, shortAddress: String, lastSeen: String?) {
+    init(firstName: String, lastName: String, bio: String?,
+         shortAddress: String, passwordHash: String) {
         self.firstName = firstName
         self.lastName = lastName
         self.bio = bio
         self.shortAddress = shortAddress
-        self.lastSeen = lastSeen
+        self.passwordHash = passwordHash
     }
     
     init?(map: Map) {}
@@ -23,6 +24,6 @@ struct User: Mappable, Codable {
         lastName <- map["lastName"]
         bio <- map["bio"]
         shortAddress <- map["shortAddress"]
-        lastSeen <- map["lastSeen"]
+        passwordHash <- map["passwordHash"]
     }
 }

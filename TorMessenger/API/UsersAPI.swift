@@ -1,10 +1,12 @@
 import Foundation
 import Moya
+import SwiftyUserDefaults
 
 enum UsersAPI {
     case getUserInformation(parameter: String)
-    case register(userParameter: User)
+    case register(userParameter: UserRegistration)
     case auth(credentials: Auth)
+    case fetchMultipleUsers(parameter: [String])
 }
 
 extension UsersAPI: TargetType {
@@ -20,6 +22,8 @@ extension UsersAPI: TargetType {
             return "/register"
         case .auth:
             return "/auth"
+        case .fetchMultipleUsers:
+            return "/fetchMultiple"
         }
     }
     
@@ -30,6 +34,8 @@ extension UsersAPI: TargetType {
         case .register:
             return .post
         case .auth:
+            return .post
+        case .fetchMultipleUsers:
             return .post
         }
     }
@@ -48,11 +54,25 @@ extension UsersAPI: TargetType {
         case .register(userParameter: let userParameter):
             return .requestParameters(parameters: userParameter.toJSON(),
                                       encoding: JSONEncoding.default)
+        case .fetchMultipleUsers(parameter: let parameter):
+            return .requestJSONEncodable(parameter)
         }
     }
     
     public var headers: [String : String]? {
-        return ["Content-Type": "application/json"]
+        switch self {
+        case .auth:
+            return ["Content-Type": "application/json"]
+        case .register:
+            return ["Content-Type": "application/json"]
+        case .getUserInformation:
+            return ["Content-Type": "application/json",
+                    "Authorization" : "Bearer \(Defaults[\.authToken])"]
+        case .fetchMultipleUsers:
+            return ["Content-Type": "application/json",
+                    "Authorization" : "Bearer \(Defaults[\.authToken])"]
+        }
+        
     }
     
     public var validationType: ValidationType {

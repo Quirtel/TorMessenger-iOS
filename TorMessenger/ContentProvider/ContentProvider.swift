@@ -23,7 +23,7 @@ final class ContentProvider {
     }
     
     func fetchUser(shortAddress: String,
-                    completion: @escaping (User?) -> ()) throws {
+                   onSuccess: @escaping (User?) -> (), onError: ((_ errorCode: HTTPStatusCode?) -> ())?) {
         requestWithTokenCheck() {
             self.usersProvider.rx.request(.getUserInformation(parameter: shortAddress),
                                           callbackQueue: DispatchQueue.global()).subscribe { event in
@@ -31,28 +31,59 @@ final class ContentProvider {
                 case .success(let response):
                     let user = User.init(JSONString: try! response.mapString())
                     DispatchQueue.main.async {
-                        completion(user)
+                        onSuccess(user)
                     }
                 case .error(let error):
-                    self.refreshToken(error: error)
+                    let statusCode = HTTPStatusCode(rawValue: error.statusCode ?? 0)!
+                    if statusCode == .unauthorized {
+                        self.refreshToken(error: error)
+                    }
                     print(error)
+                    onError?(statusCode)
                     break
                 }
             }.disposed(by: self.disposeBag)
         }
     }
     
-    func register(user: User, completion: @escaping (User?) -> ()) throws {
+    func fetchMultipleUsers(userNames: [String], onSuccess: @escaping ([User]) -> (),
+                            onError: @escaping (_ errorCode: HTTPStatusCode?) -> ()) {
+        requestWithTokenCheck {
+            self.usersProvider.rx.request(.fetchMultipleUsers(parameter: userNames),
+                                     callbackQueue: DispatchQueue.global()).subscribe { event in
+                switch event {
+                case .success(let response):
+                    let users = [User].init(JSONString: try! response.mapString())!
+                    DispatchQueue.main.async {
+                        onSuccess(users)
+                    }
+                case .error(let error):
+                    self.refreshToken(error: error)
+                    print(error)
+                    DispatchQueue.main.async {
+                        onError(HTTPStatusCode.init(rawValue: error.statusCode ?? 0))
+                    }
+                    break
+                }
+            }.disposed(by: self.disposeBag)
+        }
+    }
+    
+    func register(user: UserRegistration, onSuccess: @escaping (User) -> (),
+                  onError: @escaping (_ errorCode: HTTPStatusCode?) -> ()) {
         usersProvider.rx.request(.register(userParameter: user), callbackQueue: DispatchQueue.global()).subscribe { event in
             switch event {
             case .success(let response):
                 let user = User.init(JSONString: try! response.mapString())
                 DispatchQueue.main.async {
-                    completion(user)
+                    onSuccess(user!)
                 }
             case .error(let error):
                 self.refreshToken(error: error)
                 print(error)
+                DispatchQueue.main.async {
+                    onError(HTTPStatusCode.init(rawValue: error.statusCode ?? 0))
+                }
                 break
             }
         }.disposed(by: disposeBag)
@@ -65,7 +96,9 @@ final class ContentProvider {
                 let credentials = BearerToken(JSONString: try! context.mapString())!
                 Defaults[\.authToken] = credentials.token
                 Defaults[\.tokenExpirationDate] = String(credentials.expirationDate)
-                completionHandler?()
+                DispatchQueue.main.async {
+                    completionHandler?()
+                }
             case .error(let error):
                 print("requesting token error: \n" + error.localizedDescription)
                 errorHandler?(error.statusCode)
@@ -97,14 +130,9 @@ final class ContentProvider {
                 
                 messageDatabaseObjects.removeAll()
                 messageDatabaseObjects = realm.objects(MessageRealmObject.self)
-                    .sorted(byKeyPath: "sentTime", ascending: false)
-                    .distinct(by: ["fromUserId"]).compactMap {
-                        if $0.fromUserId == Defaults[\.username]! {
-                            return nil
-                        } else {
-                            return $0
-                        }
-                }
+                    .sorted(byKeyPath: "sentTime", ascending: false).compactMap {$0}
+                
+                
                 
                 completion(messageDatabaseObjects)
             
@@ -125,11 +153,15 @@ final class ContentProvider {
                     try! realm.write {
                         realm.add(MessageRealmObject(with: messageObject))
                     }
+                    
                     DispatchQueue.main.async {
                         completion()
                     }
                 case .error(let error):
-                    self.refreshToken(error: error)
+                    let statusCode = HTTPStatusCode(rawValue: error.statusCode ?? 0)!
+                    if statusCode == .unauthorized {
+                        self.refreshToken(error: error)
+                    }
                     break
                 }
             }.disposed(by: self.disposeBag)

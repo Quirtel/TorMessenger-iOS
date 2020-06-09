@@ -10,7 +10,13 @@ class ChatCell: UITableViewCell, NibReusable {
         senderName.text = model.name
         previewText.text = model.lastMessageText
         let date = Date(timeIntervalSince1970: Double(model.sentTime)!)
-        let formatter = RelativeDateTimeFormatter()
-        sentTime.text = formatter.localizedString(for: date, relativeTo: Date.init())
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd.MM.yyyy"
+        
+        if Date.init().distance(to: date) < 86400 {
+            formatter.dateFormat = "HH:mm"
+        }
+        
+        sentTime.text = formatter.string(from: date)
     }
 }

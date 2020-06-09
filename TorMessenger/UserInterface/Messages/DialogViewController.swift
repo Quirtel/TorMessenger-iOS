@@ -7,10 +7,14 @@ import InputBarAccessoryView
 class DialogViewController: MessagesViewController {
     var messages: [MessageRealmObject] = []
     var currentSenderId = ""
-    var userId = Defaults[\.username] ?? "null"
+    var userId = Defaults[\.username] 
     
     let refreshControl = UIRefreshControl()
     let contentProvider = ContentProvider()
+    
+    // Shows if we need to add this contact to our list
+    // (i.e we've never written a message to them or we've written before)
+    var shouldAddToContactsOnMessageSend = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,6 +39,18 @@ class DialogViewController: MessagesViewController {
         
         messagesCollectionView.addSubview(refreshControl)
         refreshControl.addTarget(self, action: #selector(loadMoreMessages), for: .valueChanged)
+    }
+    
+    func addCurrentUserToContactsList() {
+        contentProvider.fetchUser(shortAddress: currentSenderId, onSuccess: { user in
+            if let user = user {
+                let realmInstance = try! Realm()
+                let userRealmObject = UserRealmObject(with: user)
+                try! realmInstance.write {
+                    realmInstance.add(userRealmObject, update: .all)
+                }
+            }
+        }, onError: nil)
     }
     
     @objc func loadMoreMessages() {
@@ -100,6 +116,11 @@ extension DialogViewController: InputBarAccessoryViewDelegate {
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         contentProvider.sendMessage(toUserId: currentSenderId, text: text) {
             inputBar.inputTextView.text = ""
+            if self.shouldAddToContactsOnMessageSend {
+                DispatchQueue.main.async {
+                    self.addCurrentUserToContactsList()
+                }
+            }
             self.loadMoreMessages()
         }
     }

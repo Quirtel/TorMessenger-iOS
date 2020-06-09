@@ -12,11 +12,16 @@ class AuthViewController: UIViewController {
     @IBOutlet weak var activityStatusLabel: UILabel!
     
     private let authContentProvider = ContentProvider()
+    private var registrationController = StoryboardScene.Registration.registrationViewController.instantiate()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        NotificationCenter.default.addObserver(self, selector: #selector(onRegistrationComplete),
+                                               name: NSNotification.Name(rawValue: "registrationSuccess"), object: registrationController)
         loginButton.addTarget(self, action: #selector(onLoginButtonPressed), for: .touchUpInside)
+        registerButton.addTarget(self, action: #selector(onRegisterButtonPressed), for: .touchUpInside)
+        _ = UINavigationController(rootViewController: registrationController)
     }
     
     @objc func onLoginButtonPressed() {
@@ -41,6 +46,20 @@ class AuthViewController: UIViewController {
         }
     }
     
+    @objc func onRegisterButtonPressed() {
+        self.navigationController?.pushViewController(registrationController, animated: true)
+    }
+    
+    @objc func onRegistrationComplete() {
+        authContentProvider.authenticate(auth: Auth(login: Defaults[\.username]!,
+                                                    passwordHash: Defaults[\.passwordHash]!),
+        completionHandler: {
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: NSNotification.Name(rawValue: "loginSuccess"), object: self)
+                self.dismiss(animated: true, completion: nil)
+            }
+        }, errorHandler: nil)
+    }
 }
 
 extension AuthViewController: UITextFieldDelegate {

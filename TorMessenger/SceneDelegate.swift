@@ -14,7 +14,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         authNC.isNavigationBarHidden = true
         
         if Defaults[\.username] == nil || Defaults[\.passwordHash] == nil {
-            window?.rootViewController = authVC
+            window?.rootViewController = authNC
             window?.makeKeyAndVisible()
         } else {
             initializeViews()
@@ -38,18 +38,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             torServiceNC.navigationBar.prefersLargeTitles = true
         }
         
-        //        let contactsVC = StoryboardScene.Contacts.contactsViewController.instantiate()
-        //        contactsVC.title = "Contacts"
-        //        let contactsNC = UINavigationController(rootViewController: contactsVC)
-        //        if #available(iOS 11.0, *) {
-        //            contactsNC.navigationBar.prefersLargeTitles = true
-        //        }
+        let contactsVC = StoryboardScene.Contacts.contactsViewController.instantiate()
+        contactsVC.title = "Contacts"
+        let contactsNC = UINavigationController(rootViewController: contactsVC)
+        if #available(iOS 11.0, *) {
+            contactsNC.navigationBar.prefersLargeTitles = true
+        }
         
         let tabBarController = UITabBarController()
-        tabBarController.setViewControllers([chatsNC, torServiceNC], animated: false)
+        tabBarController.setViewControllers([contactsNC, chatsNC, torServiceNC], animated: false)
         
-        //        let contactsTab = tabBarController.tabBar.items?[0]
-        //        contactsTab?.image = UIImage(systemName: "person.fill")
+        let contactsTab = tabBarController.tabBar.items?[0]
+        contactsTab?.image = UIImage(systemName: "person.fill")
         
         let chatsTab = tabBarController.tabBar.items?[0]
         chatsTab?.image = UIImage(systemName: "bubble.right.fill")

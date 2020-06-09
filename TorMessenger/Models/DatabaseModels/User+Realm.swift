@@ -2,11 +2,11 @@ import Foundation
 import RealmSwift
 
 final class UserRealmObject: Object {
-    dynamic var firstName: String = ""
-    dynamic var lastName: String?
-    dynamic var bio: String?
-    dynamic var shortAddress: String = ""
-    dynamic var lastSeen: String = ""
+    @objc dynamic var firstName: String = ""
+    @objc dynamic var lastName: String?
+    @objc dynamic var bio: String?
+    @objc dynamic var shortAddress: String = ""
+    @objc dynamic var lastSeen: String? = ""
     
     convenience init(with model: User) {
         self.init()
@@ -15,5 +15,8 @@ final class UserRealmObject: Object {
         self.bio = model.bio
         self.shortAddress = model.shortAddress
         self.lastSeen = model.lastSeen
+    }
+    override static func primaryKey() -> String? {
+        return "shortAddress"
     }
 }

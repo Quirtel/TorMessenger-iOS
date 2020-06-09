@@ -32,6 +32,11 @@ internal enum StoryboardScene {
 
     internal static let initialScene = InitialSceneType<UIKit.UIViewController>(storyboard: LaunchScreen.self)
   }
+  internal enum Registration: StoryboardType {
+    internal static let storyboardName = "Registration"
+
+    internal static let registrationViewController = SceneType<TorMessenger.RegistrationViewController>(storyboard: Registration.self, identifier: "RegistrationViewController")
+  }
   internal enum TorIndicator: StoryboardType {
     internal static let storyboardName = "TorIndicator"
 
